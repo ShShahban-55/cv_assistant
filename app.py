@@ -116,17 +116,30 @@ CV:
 {cv_text}
 """
 
-QA_PROMPT = """You are an assistant that answers questions about ONE candidate using ONLY the CV below.
+QA_EN = """You answer questions about ONE candidate using ONLY the CV below.
 
 Rules:
-- Answer ONLY what the user asked. Do not add any extra information.
-- Keep it very short: one sentence, or a short bullet list when several items are asked.
+- Answer ONLY what was asked. No extra information.
+- Be very short: one sentence, or a short bullet list when several items are asked.
 - If the answer is not in the CV, say it is not mentioned in the CV.
-- Reply in the same language as the question. If the question is in Arabic (or the user asks for "بالعربي"), write the WHOLE answer in Arabic.
-- When answering in Arabic, write people's names, universities, cities and job titles in Arabic script, using the common correct Arabic spelling of Arabic names (examples: Shahd -> شهد, Shaaban -> شعبان, Mohamed -> محمد, Hassan -> حسن, Ahmed -> أحمد, Zagazig University -> جامعة الزقازيق).
-- Keep emails, phone numbers, links, grades/numbers, and technical terms (Python, Pandas, Flask, GitHub...) exactly as written in the CV in English.
-- When answering in English, copy everything exactly as written in the CV.
-- Never guess numbers or spellings you are not sure about.
+- Your reply MUST be written in English only. Never use Arabic.
+- Copy names, universities, companies, job titles, emails, numbers and technical terms EXACTLY as written in the CV.
+- Never guess numbers or spellings.
+
+CV:
+{cv_text}
+"""
+
+QA_AR = """You answer questions about ONE candidate using ONLY the CV below.
+
+Rules:
+- Answer ONLY what was asked. No extra information.
+- Be very short: one sentence, or a short bullet list when several items are asked.
+- If the answer is not in the CV, say it is not mentioned in the CV.
+- Your reply MUST be written in Arabic.
+- Write people's names, universities, cities and job titles in Arabic script, using the correct common Arabic spelling (examples: Shahd -> شهد, Shaaban -> شعبان, Mohamed -> محمد, Hassan -> حسن, Ahmed -> أحمد, Zagazig University -> جامعة الزقازيق).
+- Keep emails, phone numbers, links, numbers/grades and technical terms (Python, Pandas, Flask, GitHub...) exactly as written in the CV, in English.
+- Never guess numbers or spellings.
 
 CV:
 {cv_text}
@@ -305,16 +318,14 @@ if q:
     st.session_state["history"].append(("user", q))
     with st.chat_message("user", avatar="🙋‍♀️"):
         st.write(q)
-    msgs = [{"role": "system", "content": QA_PROMPT.format(cv_text=st.session_state["cv_text"][:8000])}]
-    msgs += [{"role": r, "content": c} for r, c in st.session_state["history"][-6:]]
-    if is_arabic(q):
-        lang_rule = "Write this reply in Arabic only (keep emails, numbers and technical terms in English)."
-    else:
-        lang_rule = (
-            "Write this reply in English ONLY, copying names and details exactly as written in the CV. "
-            "Do not use any Arabic, even if earlier replies were in Arabic."
-        )
-    msgs.append({"role": "system", "content": lang_rule})
+    ar = is_arabic(q)
+    system_prompt = (QA_AR if ar else QA_EN).format(cv_text=st.session_state["cv_text"][:8000])
+    msgs = [{"role": "system", "content": system_prompt}]
+    # keep only earlier turns written in the same language as this question
+    past = [(r, c) for r, c in st.session_state["history"][:-1] if is_arabic(c) == ar][-4:]
+    msgs += [{"role": r, "content": c} for r, c in past]
+    reminder = "\n\n(Reply in Arabic.)" if ar else "\n\n(Reply in English only.)"
+    msgs.append({"role": "user", "content": q + reminder})
     with st.chat_message("assistant", avatar="🤖"):
         with st.spinner("بفكر..."):
             try:
