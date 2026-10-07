@@ -154,6 +154,21 @@ QUICK = [
 ]
 
 
+def chat_stream(messages, max_tokens=300):
+    """Yield the answer piece by piece so the text appears as soon as it starts."""
+    kwargs = {}
+    if "gpt-oss" in MODEL_NAME:
+        kwargs["reasoning_effort"] = "low"
+        max_tokens += 500  # room for the model's short reasoning
+    stream = client.chat.completions.create(
+        model=MODEL_NAME, messages=messages, max_tokens=max_tokens,
+        temperature=0, stream=True, **kwargs,
+    )
+    for chunk in stream:
+        if chunk.choices and chunk.choices[0].delta.content:
+            yield chunk.choices[0].delta.content
+
+
 def chat(messages, max_tokens=700):
     kwargs = {}
     if "gpt-oss" in MODEL_NAME:
@@ -327,12 +342,14 @@ if q:
     reminder = "\n\n(Reply in Arabic.)" if ar else "\n\n(Reply in English only.)"
     msgs.append({"role": "user", "content": q + reminder})
     with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("بفكر..."):
-            try:
-                ans = chat(msgs, 400)
-            except Exception as e:
-                ans = f"حصل خطأ: {e}"
-        st.write(ans)
+        status = st.empty()
+        status.caption("⏳ بفكر...")
+        try:
+            ans = st.write_stream(chat_stream(msgs, 300))
+        except Exception as e:
+            ans = f"حصل خطأ: {e}"
+            st.write(ans)
+        status.empty()
     st.session_state["history"].append(("assistant", ans))
 
 st.markdown('<div class="foot">Made with ❤️ using Streamlit</div>', unsafe_allow_html=True)
