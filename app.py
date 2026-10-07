@@ -4,14 +4,14 @@ import json
 import re
 
 import streamlit as st
-from huggingface_hub import InferenceClient
+from groq import Groq
 from pypdf import PdfReader
 
 st.set_page_config(page_title="CV Assistant", page_icon="✨", layout="centered",
                    initial_sidebar_state="collapsed")
 
-MODEL_NAME = st.secrets.get("MODEL_NAME", "meta-llama/Llama-3.1-8B-Instruct")
-client = InferenceClient(model=MODEL_NAME, token=st.secrets["HF_TOKEN"])
+MODEL_NAME = st.secrets.get("MODEL_NAME", "llama-3.1-8b-instant")
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 CSS = """
 <style>
@@ -138,7 +138,9 @@ QUICK = [
 
 
 def chat(messages, max_tokens=700):
-    res = client.chat_completion(messages=messages, max_tokens=max_tokens, temperature=0.1)
+    res = client.chat.completions.create(
+        model=MODEL_NAME, messages=messages, max_tokens=max_tokens, temperature=0.1
+    )
     return res.choices[0].message.content
 
 
@@ -302,4 +304,9 @@ if q:
         st.write(ans)
     st.session_state["history"].append(("assistant", ans))
 
-st.markdown('<div class="foot">Made with ❤️ using Streamlit</div>', unsafe_allow_html=True)
+st.markdown('<div class="foot">Made with ❤️ using Streamlit</div>', unsafe_allow_html=True) 
+
+
+ 
+ 
+ 
