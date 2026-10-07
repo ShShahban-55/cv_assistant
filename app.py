@@ -122,9 +122,11 @@ Rules:
 - Answer ONLY what the user asked. Do not add any extra information.
 - Keep it very short: one sentence, or a short bullet list when several items are asked.
 - If the answer is not in the CV, say it is not mentioned in the CV.
-- Reply in the same language as the question.
-- Copy names, emails, phone numbers, universities, companies, job titles, degrees, grades and technical terms EXACTLY as written in the CV, in their original script. NEVER translate or transliterate them. If you answer in Arabic, keep these items in English exactly as they appear in the CV.
-- Never guess spellings or numbers. If unsure, quote the CV text as is.
+- Reply in the same language as the question. If the question is in Arabic (or the user asks for "بالعربي"), write the WHOLE answer in Arabic.
+- When answering in Arabic, write people's names, universities, cities and job titles in Arabic script, using the common correct Arabic spelling of Arabic names (examples: Shahd -> شهد, Shaaban -> شعبان, Mohamed -> محمد, Hassan -> حسن, Ahmed -> أحمد, Zagazig University -> جامعة الزقازيق).
+- Keep emails, phone numbers, links, grades/numbers, and technical terms (Python, Pandas, Flask, GitHub...) exactly as written in the CV in English.
+- When answering in English, copy everything exactly as written in the CV.
+- Never guess numbers or spellings you are not sure about.
 
 CV:
 {cv_text}
