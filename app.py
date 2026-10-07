@@ -172,6 +172,10 @@ def esc(x):
     return html.escape(str(x or ""))
 
 
+def is_arabic(s):
+    return bool(re.search(r"[؀-ۿ]", s or ""))
+
+
 def initials(name):
     parts = [w for w in str(name or "").split() if w]
     return "".join(w[0].upper() for w in parts[:2]) or "CV"
@@ -303,6 +307,14 @@ if q:
         st.write(q)
     msgs = [{"role": "system", "content": QA_PROMPT.format(cv_text=st.session_state["cv_text"][:8000])}]
     msgs += [{"role": r, "content": c} for r, c in st.session_state["history"][-6:]]
+    if is_arabic(q):
+        lang_rule = "Write this reply in Arabic only (keep emails, numbers and technical terms in English)."
+    else:
+        lang_rule = (
+            "Write this reply in English ONLY, copying names and details exactly as written in the CV. "
+            "Do not use any Arabic, even if earlier replies were in Arabic."
+        )
+    msgs.append({"role": "system", "content": lang_rule})
     with st.chat_message("assistant", avatar="🤖"):
         with st.spinner("بفكر..."):
             try:
