@@ -1,3 +1,4 @@
+     
 import hashlib
 import html
 import json
@@ -10,7 +11,7 @@ from pypdf import PdfReader
 st.set_page_config(page_title="CV Assistant", page_icon="✨", layout="centered",
                    initial_sidebar_state="collapsed")
 
-MODEL_NAME = st.secrets.get("MODEL_NAME", "llama-3.1-8b-instant")
+MODEL_NAME = st.secrets.get("MODEL_NAME", "openai/gpt-oss-20b")
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 CSS = """
@@ -138,10 +139,14 @@ QUICK = [
 
 
 def chat(messages, max_tokens=700):
+    kwargs = {}
+    if "gpt-oss" in MODEL_NAME:
+        kwargs["reasoning_effort"] = "low"
+        max_tokens += 800  # room for the model's short reasoning
     res = client.chat.completions.create(
-        model=MODEL_NAME, messages=messages, max_tokens=max_tokens, temperature=0.1
+        model=MODEL_NAME, messages=messages, max_tokens=max_tokens, temperature=0.1, **kwargs
     )
-    return res.choices[0].message.content
+    return res.choices[0].message.content or ""
 
 
 def extract_json(text):
@@ -304,9 +309,4 @@ if q:
         st.write(ans)
     st.session_state["history"].append(("assistant", ans))
 
-st.markdown('<div class="foot">Made with ❤️ using Streamlit</div>', unsafe_allow_html=True) 
-
-
- 
- 
- 
+st.markdown('<div class="foot">Made with ❤️ using Streamlit</div>', unsafe_allow_html=True)
