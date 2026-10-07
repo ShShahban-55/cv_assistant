@@ -1,4 +1,3 @@
-     
 import hashlib
 import html
 import json
@@ -124,6 +123,8 @@ Rules:
 - Keep it very short: one sentence, or a short bullet list when several items are asked.
 - If the answer is not in the CV, say it is not mentioned in the CV.
 - Reply in the same language as the question.
+- Copy names, emails, phone numbers, universities, companies, job titles, degrees, grades and technical terms EXACTLY as written in the CV, in their original script. NEVER translate or transliterate them. If you answer in Arabic, keep these items in English exactly as they appear in the CV.
+- Never guess spellings or numbers. If unsure, quote the CV text as is.
 
 CV:
 {cv_text}
@@ -144,7 +145,7 @@ def chat(messages, max_tokens=700):
         kwargs["reasoning_effort"] = "low"
         max_tokens += 800  # room for the model's short reasoning
     res = client.chat.completions.create(
-        model=MODEL_NAME, messages=messages, max_tokens=max_tokens, temperature=0.1, **kwargs
+        model=MODEL_NAME, messages=messages, max_tokens=max_tokens, temperature=0, **kwargs
     )
     return res.choices[0].message.content or ""
 
